@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef NDEBUG
-#  define EXC_LOG(...) ((void) 0)
+#if TRACE_EXCEPTIONS
+#  define EXC_TRACE(...) fprintf(stderr, __VA_ARGS__)
 #else
-#  define EXC_LOG(...) fprintf(stderr, __VA_ARGS__)
+#  define EXC_TRACE(...) ((void) 0)
 #endif
 
 #define BEGIN_TRY \
@@ -15,13 +15,13 @@
         int _exc_did_finally = 0; \
         int _exc_did_catch = 0; \
         state_t _exc_state; \
-        EXC_LOG("Entering try block %p\n", (void *)&_exc_state); \
+        EXC_TRACE("Entering try block %p\n", (void *)&_exc_state); \
         push_state(&_exc_state); \
         if (!setjmp(_exc_state.env) || (_exc_good = 0)) {
 
 #define CATCH(e) \
         } else if (exnum == e && (_exc_did_catch = 1)) { \
-            EXC_LOG("Caught exception %u in block %p\n", exnum, \
+            EXC_TRACE("Caught exception %u in block %p\n", exnum, \
                     (void *)&_exc_state); \
 
 #define FINALLY \
@@ -30,14 +30,14 @@
             fprintf(stderr, "WARNING: Multiple FINALLY statements in " \
                     __FILE__ ":%d", __LINE__); \
         } else { \
-            EXC_LOG("Entering FINALLY in block %p\n", (void *)&_exc_state); \
+            EXC_TRACE("Entering FINALLY in block %p\n", (void *)&_exc_state); \
             /* This will throw exceptions from within FINALLY back up */ \
             pop_state(); \
         } \
         {
 
 #define END_TRY \
-        EXC_LOG("Leaving try block %p\n", (void *)&_exc_state); \
+        EXC_TRACE("Leaving try block %p\n", (void *)&_exc_state); \
         } \
         if (!_exc_did_finally) { \
             pop_state(); \
