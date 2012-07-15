@@ -11,5 +11,9 @@ FULLLINK := $(LINKER)
 
 all: exceptions.o
 
-%.o: %.c
+$(OFILES): %.o: %.c
 	$(FULLCC) -c $*.c -o $@
+
+%: %.c $(OFILES)
+	$(FULLCC) -c $*.c -o $*.o
+	$(FULLLINK) $(OFILES) $*.o -o $*
