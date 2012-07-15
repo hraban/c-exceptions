@@ -27,6 +27,8 @@
         } else if (issubexc(exnum.type, &e) && (_exc_did_catch = 1)) { \
             EXC_TRACE("Caught exception %p in block %p\n", (void *)&e, \
                     (void *)&_exc_state); \
+            /* This will throw exceptions from within CATCH back up */ \
+            pop_state();
 
 #define FINALLY \
         } \
@@ -35,15 +37,17 @@
                     __FILE__ ":%d", __LINE__); \
         } else { \
             EXC_TRACE("Entering FINALLY in block %p\n", (void *)&_exc_state); \
-            /* This will throw exceptions from within FINALLY back up */ \
-            pop_state(); \
+            if (!_exc_did_catch) { \
+                /* This will throw exceptions from within FINALLY back up */ \
+                pop_state(); \
+            } \
         } \
         {
 
 #define END_TRY \
         EXC_TRACE("Leaving try block %p\n", (void *)&_exc_state); \
         } \
-        if (!_exc_did_finally) { \
+        if (!_exc_did_finally && !_exc_did_catch) { \
             pop_state(); \
         } \
         if (!_exc_good && !_exc_did_catch) { \
