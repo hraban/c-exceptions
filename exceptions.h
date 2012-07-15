@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,8 +24,8 @@
         if (!setjmp(_exc_state.env) || (_exc_good = 0)) {
 
 #define CATCH(e) \
-        } else if (exnum == e && (_exc_did_catch = 1)) { \
-            EXC_TRACE("Caught exception %u in block %p\n", exnum, \
+        } else if (issubexc(exnum.type, &e) && (_exc_did_catch = 1)) { \
+            EXC_TRACE("Caught exception %p in block %p\n", (void *)&e, \
                     (void *)&_exc_state); \
 
 #define FINALLY \
@@ -54,22 +55,32 @@
     do { \
         exnum = e; \
         if (state_stack == NULL) { \
-            fprintf(stderr, "Unhandled exception: %u\n", e); \
+            fprintf(stderr, "Unhandled exception at %s:%d\n", \
+                    __FILE__, __LINE__); \
             abort(); \
         } \
         longjmp(state_stack->env, 1); \
     } while (0)
+
+#define THROW_NEW(cls) \
+    do { \
+        exception_t ex = { .type = &cls }; \
+        THROW(ex); \
+    } while (0)
+
+#define CREATE_EXCEPTION(p) { .parent = p }
 
 typedef struct state {
     jmp_buf env;
     struct state *prev;
 } state_t;
 
-typedef enum
-{
-    E1,
-    E2,
-    E_PI,
+typedef struct exception_class {
+    const struct exception_class *parent;
+} exception_class_t;
+
+typedef struct exception {
+    const exception_class_t *type;
 } exception_t;
 
 extern state_t *state_stack;
@@ -77,6 +88,7 @@ extern exception_t exnum;
 
 void push_state(state_t *statep);
 state_t * pop_state(void);
+int issubexc(const exception_class_t *e1, const exception_class_t *e2);
 
 #endif
 

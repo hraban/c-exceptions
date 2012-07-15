@@ -3,14 +3,18 @@
 
 #include "exceptions.h"
 
+const exception_class_t root_e = CREATE_EXCEPTION(NULL);
+const exception_class_t odd_e = CREATE_EXCEPTION(&root_e);
+const exception_class_t pi_e = CREATE_EXCEPTION(&odd_e);
+
 static void
-throw_if_odd(int x, exception_t e)
+throw_if_odd(int x)
 {
     if (x == 31415) {
-        THROW(E_PI);
+        THROW_NEW(pi_e);
     }
     if (x % 2) {
-        THROW(e);
+        THROW_NEW(odd_e);
     }
 }
 
@@ -19,22 +23,40 @@ try_and_catch(int x)
 {
     BEGIN_TRY
     {
-        throw_if_odd(x, E2);
-        printf("%d is even\n", x);
+        throw_if_odd(x);
+        printf("%d is even", x);
     }
-    CATCH(E1)
+    /* When commented out, this will be caught as odd_e
+    CATCH(pi_e)
     {
-        printf("Caught E1\n");
+        printf("%d is (almost) PI", x);
     }
-    CATCH(E2)
-        printf("Caught E2\n");
-    CATCH(E_PI)
+    */
+    CATCH(odd_e)
     {
-        printf("That's (almost) PI!\n");
+        printf("%d is odd", x);
     }
     FINALLY
     {
-        printf("I have no idea what just happened.\n");
+        printf(".\n");
+    }
+    END_TRY
+}
+
+static void
+throw_in_finally(int x)
+{
+    BEGIN_TRY
+    {
+        throw_if_odd(x);
+    }
+    CATCH(odd_e)
+    {
+        /* No problem. */
+    }
+    FINALLY
+    {
+        THROW_NEW(odd_e);
     }
     END_TRY
 }
@@ -49,6 +71,16 @@ main(int argc, char *argv[])
     try_and_catch(1);
     try_and_catch(2);
     try_and_catch(31415);
+
+    BEGIN_TRY
+    {
+        throw_in_finally(3);
+    }
+    CATCH(root_e)
+    {
+        printf("Caught root exception\n");
+    }
+    END_TRY
 
     return 0;
 }

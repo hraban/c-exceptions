@@ -19,3 +19,9 @@ pop_state(void)
     return p;
 }
 
+int
+issubexc(const exception_class_t *e1, const exception_class_t *e2)
+{
+    return (e1 == e2) || (e1 != NULL && issubexc(e1->parent, e2));
+}
+
