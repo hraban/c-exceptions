@@ -11,6 +11,9 @@ FULLLINK := $(LINKER)
 
 all: exceptions.o
 
+clean:
+	rm -f $(OFILES) $(NAME)
+
 $(OFILES): %.o: %.c %.h
 	$(FULLCC) -c $*.c -o $@
 
