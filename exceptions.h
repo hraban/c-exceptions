@@ -26,11 +26,13 @@
 #define CATCH(e) \
         } else if (_exc_issubexc(_exc_pending.type, &e)) { \
             _exc_good = 0; \
-            _exc_did_catch = 1; \
+            /* This will throw exceptions from within CATCH back up */ \
+            if (_exc_did_catch == 0) { \
+                _exc_pop_state(); \
+                _exc_did_catch = 1; \
+            } \
             EXC_TRACE("Caught exception %p in block %p\n", (void *)&e, \
                     (void *)&_exc_state); \
-            /* This will throw exceptions from within CATCH back up */ \
-            _exc_pop_state();
 
 #define FINALLY \
         } else { \
