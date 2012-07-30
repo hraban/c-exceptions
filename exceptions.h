@@ -24,7 +24,8 @@
         if (!setjmp(_exc_state.env) || (_exc_good = 0)) {
 
 #define CATCH(e) \
-        } else if (issubexc(exnum.type, &e) && (_exc_did_catch = 1)) { \
+        } else if (issubexc(exnum.type, &e)) { \
+            _exc_did_catch = 1; \
             EXC_TRACE("Caught exception %p in block %p\n", (void *)&e, \
                     (void *)&_exc_state); \
 
