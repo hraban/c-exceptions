@@ -21,15 +21,18 @@
         state_t _exc_state; \
         EXC_TRACE("Entering try block %p\n", (void *)&_exc_state); \
         push_state(&_exc_state); \
-        if (!setjmp(_exc_state.env) || (_exc_good = 0)) {
+        if (setjmp(_exc_state.env) == 0) { \
 
 #define CATCH(e) \
         } else if (issubexc(exnum.type, &e)) { \
+            _exc_good = 0; \
             _exc_did_catch = 1; \
             EXC_TRACE("Caught exception %p in block %p\n", (void *)&e, \
                     (void *)&_exc_state); \
 
 #define FINALLY \
+        } else { \
+            _exc_good = 0; \
         } \
         if (_exc_did_finally++) { \
             fprintf(stderr, "WARNING: Multiple FINALLY statements in " \
