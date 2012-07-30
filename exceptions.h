@@ -35,8 +35,8 @@
             _exc_good = 0; \
         } \
         if (_exc_did_finally++) { \
-            fprintf(stderr, "WARNING: Multiple FINALLY statements in " \
-                    __FILE__ ":%d", __LINE__); \
+            fprintf(stderr, "WARNING: Multiple FINALLY statements in %s:%d", \
+                    __FILE__, __LINE__); \
         } else { \
             EXC_TRACE("Entering FINALLY in block %p\n", (void *)&_exc_state); \
             /* This will throw exceptions from within FINALLY back up */ \
