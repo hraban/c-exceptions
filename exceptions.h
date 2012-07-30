@@ -31,8 +31,8 @@
                 _exc_pop_state(); \
                 _exc_did_catch = 1; \
             } \
-            EXC_TRACE("Caught exception %p in block %p\n", (void *)&e, \
-                    (void *)&_exc_state); \
+            EXC_TRACE("Caught exception %s (%p) in block %p\n", #e, \
+                    (void *)&e, (void *)&_exc_state); \
 
 #define FINALLY \
         } else { \
