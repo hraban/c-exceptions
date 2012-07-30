@@ -1,27 +1,27 @@
 #include "exceptions.h"
 
-state_t *state_stack = NULL;
-exception_t exnum;
+_exc_state_t *_exc_state_stack = NULL;
+exception_t _exc_pending;
 
 void
-push_state(state_t *statep)
+_exc_push_state(_exc_state_t *statep)
 {
-    statep->prev = state_stack;
-    state_stack = statep;
+    statep->prev = _exc_state_stack;
+    _exc_state_stack = statep;
 }
 
-state_t *
-pop_state(void)
+_exc_state_t *
+_exc_pop_state(void)
 {
-    assert(state_stack != NULL);
-    state_t *p = state_stack;
-    state_stack = state_stack->prev;
+    assert(_exc_state_stack != NULL);
+    _exc_state_t *p = _exc_state_stack;
+    _exc_state_stack = _exc_state_stack->prev;
     return p;
 }
 
 int
-issubexc(const exception_class_t *e1, const exception_class_t *e2)
+_exc_issubexc(const exception_class_t *e1, const exception_class_t *e2)
 {
-    return (e1 == e2) || (e1 != NULL && issubexc(e1->parent, e2));
+    return (e1 == e2) || (e1 != NULL && _exc_issubexc(e1->parent, e2));
 }
 
